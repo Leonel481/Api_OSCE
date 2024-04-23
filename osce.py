@@ -3,7 +3,7 @@ import asyncio
 import aiohttp
 from datetime import datetime, timedelta
 import json
-
+import pandas as pd
 
 async def fetch(session, url):
     async with session.get(url) as response:
@@ -38,9 +38,38 @@ async def main():
 
     results = await asyncio.gather(*tasks)
     data_f = [item for sublist in results for item in sublist]
-    print(data_f)
+    return data_f
+
+async def save_data():
+    
+    data_f = await main()
+    
+    data_f = [item for sublist in data_f for item in sublist]
+
+    with open('data_f.json', 'w') as output_file:
+        json.dump(data_f, output_file, indent=2)
 
 # Ejecutar el script asíncrono
-
 if __name__ == '__main__':
-    asyncio.run(main())
+
+    # asyncio.run(main())
+    asyncio.run(save_data())
+
+    # df = pd.json_normalize(data_f)
+    # df['date'] = pd.to_datetime(df['date'], utc=True)
+    # df['publishedDate'] = pd.to_datetime(df['publishedDate'], utc=True)
+    # df['tender.datePublished'] = pd.to_datetime(df['tender.datePublished'], utc=True)
+    # df['tender.tenderPeriod.startDate'] = pd.to_datetime(df['tender.tenderPeriod.startDate'], utc=True)
+    # df['tender.tenderPeriod.endDate'] = pd.to_datetime(df['tender.tenderPeriod.endDate'], utc=True)
+    # df_reciente = df.groupby('tender.title')['date'].max().reset_index()
+    # df_filtrado = pd.merge(df, df_reciente, on=['tender.title', 'date'], how='inner')
+
+    # date_columns = df_filtrado.select_dtypes(include=['datetime64[ns, UTC]']).columns
+    # for date_column in date_columns:
+    #     df_filtrado[date_column] = df_filtrado[date_column].dt.tz_localize(None)
+
+    # # Ahora puedes exportar tu DataFrame a Excel sin problemas
+    # df_filtrado.to_excel('OSCE_TOTAL_2024.xlsx', index=False)
+
+
+
